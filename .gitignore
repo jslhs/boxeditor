@@ -43,3 +43,6 @@ boxeditor.sdf
 *.exe
 *.ilk
 *.opensdf
+GeneratedFiles
+
+
