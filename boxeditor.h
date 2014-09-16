@@ -47,6 +47,8 @@ public slots:
 
 	void merge_boxes();
 	void split_box();
+	void split_box3();
+	void split_box4();
 	void remove_boxes();
 	void add_box();
 	void change_img();
@@ -63,6 +65,7 @@ protected:
 	QString filename(const QString& path) const;
 	void add_imgs(const QStringList& imgs);
 	void open(QDir dir);
+	void split_box(int n);
 
 private:
 	Ui::boxeditorClass ui;

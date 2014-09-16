@@ -8,6 +8,7 @@
 #include <QDropEvent>
 #include <QDragEnterEvent>
 #include <QMimeData>
+#include <QShortCut>
 
 boxeditor::boxeditor(QWidget *parent)
 	: QMainWindow(parent)
@@ -22,6 +23,9 @@ boxeditor::boxeditor(QWidget *parent)
 	connect(ui.tblWords, SIGNAL(clicked(const QModelIndex&)), this, SLOT(row_activated(const QModelIndex&)));
 	connect(ui.tblWords, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(item_changed(QTableWidgetItem*)));
 
+	auto saveKey = new QShortcut(QKeySequence("Ctrl+S"), this);
+	connect(saveKey, SIGNAL(activated()), this, SLOT(save()));
+
 	auto tbl = ui.tblWords;
 	tbl->verticalHeader()->hide();
 	tbl->setColumnWidth(0, 80);
@@ -35,14 +39,17 @@ boxeditor::boxeditor(QWidget *parent)
 	auto act_split = new QAction("Split", this);
 	auto act_remove = new QAction("Remove", this);
 	auto act_add = new QAction("Insert", this);
-	
+	auto act_split3 = new QAction("Split 3", this);
+	auto act_split4 = new QAction("Split 4", this);
 
 	connect(act_merge, SIGNAL(triggered()), this, SLOT(merge_boxes()));
 	connect(act_split, SIGNAL(triggered()), this, SLOT(split_box()));
+	connect(act_split3, SIGNAL(triggered()), this, SLOT(split_box3()));
+	connect(act_split4, SIGNAL(triggered()), this, SLOT(split_box4()));
 	connect(act_remove, SIGNAL(triggered()), this, SLOT(remove_boxes()));
 	connect(act_add, SIGNAL(triggered()), this, SLOT(add_box()));
 
-	tbl->addActions({ act_merge, act_split, act_add, act_remove });
+	tbl->addActions({ act_merge, act_split, act_split3, act_split4, act_add, act_remove });
 }
 
 boxeditor::~boxeditor()
@@ -126,7 +133,17 @@ void boxeditor::merge_boxes()
 
 void boxeditor::split_box()
 {
+	split_box(2);
+}
 
+void boxeditor::split_box3()
+{
+	split_box(3);
+}
+
+void boxeditor::split_box4()
+{
+	split_box(4);
 }
 
 void boxeditor::remove_boxes()
@@ -135,6 +152,11 @@ void boxeditor::remove_boxes()
 }
 
 void boxeditor::add_box()
+{
+
+}
+
+void boxeditor::split_box(int n)
 {
 
 }
@@ -400,3 +422,4 @@ void boxeditor::open_folder()
 			open(QDir(folders.first()));
 	}
 }
+
