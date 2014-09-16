@@ -39,11 +39,19 @@ public:
 
 public slots:
 	void open();
-	void merge();
 	void save();
 	void row_activated(const QModelIndex & index);
 	void item_changed(QTableWidgetItem * item);
 
+	void merge_boxes();
+	void split_box();
+	void remove_boxes();
+	void add_box();
+	
+protected:
+	void dropEvent(QDropEvent* ev) override;
+	void dragEnterEvent(QDragEnterEvent* ev) override;
+	void open(const QString& img_file);
 	box_list parse_boxes(const QString& filename) const;
 	void show_boxes(const box_list& boxes) const;
 	box_list boxes() const;

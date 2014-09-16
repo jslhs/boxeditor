@@ -5,7 +5,9 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QPainter>
-
+#include <QDropEvent>
+#include <QDragEnterEvent>
+#include <QMimeData>
 
 boxeditor::boxeditor(QWidget *parent)
 	: QMainWindow(parent)
@@ -29,10 +31,16 @@ boxeditor::boxeditor(QWidget *parent)
 	tbl->setColumnWidth(5, 60);
 
 	auto act_merge = new QAction("Merge", this);
+	auto act_split = new QAction("Split", this);
 	auto act_remove = new QAction("Remove", this);
-	connect(act_merge, SIGNAL(triggered()), this, SLOT(merge()));
+	auto act_add = new QAction("Add", this);
 
-	tbl->addActions({ act_merge, act_remove});
+	connect(act_merge, SIGNAL(triggered()), this, SLOT(merge_boxes()));
+	connect(act_split, SIGNAL(triggered()), this, SLOT(split_box()));
+	connect(act_remove, SIGNAL(triggered()), this, SLOT(remove_boxes()));
+	connect(act_add, SIGNAL(triggered()), this, SLOT(add_box()));
+
+	tbl->addActions({ act_merge, act_split, act_add, act_remove });
 }
 
 boxeditor::~boxeditor()
@@ -50,26 +58,31 @@ void boxeditor::open()
 		auto files = dlg.selectedFiles();
 		if (files.size())
 		{
-			_img = QImage(files.first());
-			_box_filename = files.first();
-			auto pos = _box_filename.lastIndexOf(".");
-			if (pos != -1)
-			{
-				_box_filename.replace(pos, _box_filename.length() - pos, ".box");
-			}
-			else
-			{
-				_box_filename += ".box";
-			}
-
-			auto &boxes = parse_boxes(_box_filename);
-			show_boxes(boxes);
-			show_img_with_boxes(_img, boxes);
+			open(files.first());
 		}
 	}
 }
 
-void boxeditor::merge()
+void boxeditor::open(const QString& img_file)
+{
+	_img = QImage(img_file);
+	_box_filename = img_file;
+	auto pos = _box_filename.lastIndexOf(".");
+	if (pos != -1)
+	{
+		_box_filename.replace(pos, _box_filename.length() - pos, ".box");
+	}
+	else
+	{
+		_box_filename += ".box";
+	}
+
+	auto &boxes = parse_boxes(_box_filename);
+	show_boxes(boxes);
+	show_img_with_boxes(_img, boxes);
+}
+
+void boxeditor::merge_boxes()
 {
 	auto tbl = ui.tblWords;
 	auto ranges = tbl->selectedRanges();
@@ -104,6 +117,23 @@ void boxeditor::merge()
 
 	show_boxes(bx);
 	show_img_with_boxes(_img, bx);
+
+	tbl->selectRow(range.topRow());
+}
+
+void boxeditor::split_box()
+{
+
+}
+
+void boxeditor::remove_boxes()
+{
+
+}
+
+void boxeditor::add_box()
+{
+
 }
 
 void boxeditor::save()
@@ -171,6 +201,7 @@ void boxeditor::show_boxes(const box_list& boxes) const
 	}
 
 	tbl->setUpdatesEnabled(true);
+	tbl->update();
 }
 
 box_list boxeditor::boxes() const
@@ -248,4 +279,39 @@ void boxeditor::row_activated(const QModelIndex & index)
 void boxeditor::item_changed(QTableWidgetItem * item)
 {
 	show_img_with_boxes(_img, boxes());
+}
+
+void boxeditor::dropEvent(QDropEvent* ev)
+{
+	if (ev->mimeData()->hasUrls())
+	{
+		ev->accept();
+		auto urls = ev->mimeData()->urls();
+		if (urls.isEmpty()) return;
+		auto filename = urls.first().toLocalFile();
+		open(filename);
+	}
+}
+
+void boxeditor::dragEnterEvent(QDragEnterEvent* ev)
+{
+	if (ev->mimeData()->hasUrls())
+	{
+		ev->accept();
+
+		bool can_drop = false;
+		auto &urls = ev->mimeData()->urls();
+		if (urls.isEmpty() || (urls.count() > 1))
+		{
+			can_drop = false;
+		}
+		else
+		{
+			auto filename = urls.first().toLocalFile();
+			QRegExp exp(".*[jpg|jpeg|bmp|tif|png|gif]$");
+			can_drop = exp.exactMatch(filename);
+		}
+
+		ev->setDropAction(can_drop ? Qt::LinkAction : Qt::IgnoreAction);
+	}
 }
