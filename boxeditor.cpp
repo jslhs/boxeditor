@@ -179,7 +179,6 @@ void boxeditor::split_box(int n)
 		if (i)
 		{
 			b.left++;
-			b.right--;
 		}
 		bx.insert(row + i, b);
 	}
