@@ -73,6 +73,7 @@ private:
 	QList<QAction*> _img_acts;
 	QString _box_filename;
 	QImage _img;
+	QLabel* _status_words;
 };
 
 #endif // BOXEDITOR_H

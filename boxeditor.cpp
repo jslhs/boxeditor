@@ -50,6 +50,9 @@ boxeditor::boxeditor(QWidget *parent)
 	connect(act_add, SIGNAL(triggered()), this, SLOT(add_box()));
 
 	tbl->addActions({ act_merge, act_split, act_split3, act_split4, act_add, act_remove });
+
+	_status_words = new QLabel("words: 0");
+	ui.statusBar->addWidget(_status_words, 50);
 }
 
 boxeditor::~boxeditor()
@@ -158,7 +161,30 @@ void boxeditor::add_box()
 
 void boxeditor::split_box(int n)
 {
-
+	if (n <= 0) return;
+	auto tbl = ui.tblWords;
+	auto ranges = tbl->selectedRanges();
+	if (ranges.isEmpty()) return;
+	auto row = ranges.first().topRow();
+	auto bx = boxes();
+	auto b0 = bx[row];
+	int w = b0.width() / n;
+	int h = b0.height();
+	bx.remove(row);
+	for (int i = 0; i < n; i++)
+	{
+		box b = b0;
+		b.left = b0.left + i * w;
+		b.right = b.left + w;
+		if (i)
+		{
+			b.left++;
+			b.right--;
+		}
+		bx.insert(row + i, b);
+	}
+	show_boxes(bx);
+	show_img_with_boxes(_img, bx);
 }
 
 void boxeditor::save()
@@ -171,7 +197,9 @@ void boxeditor::save()
 	{
 		for (int row = 0; row < tbl->rowCount(); row++)
 		{
-			ts << tbl->item(row, 0)->text() << " "
+			auto text = tbl->item(row, 0)->text();
+			QChar word = text.isEmpty() ? ' ' : text.at(0);
+			ts << word << " "
 				<< tbl->item(row, 1)->text() << " "
 				<< tbl->item(row, 2)->text() << " "
 				<< tbl->item(row, 3)->text() << " "
@@ -179,6 +207,8 @@ void boxeditor::save()
 				<< tbl->item(row, 5)->text() << "\n";
 		}
 	}
+
+	ui.statusBar->showMessage("box file saved.", 5000);
 }
 
 box_list boxeditor::parse_boxes(const QString& filename) const
@@ -195,7 +225,9 @@ box_list boxeditor::parse_boxes(const QString& filename) const
 		while (!ts.atEnd())
 		{
 			box b;
-			ts >> b.word >> b.left >> b.bottom >> b.right >> b.top >> b.page;
+			QString text;
+			ts >> text >> b.left >> b.bottom >> b.right >> b.top >> b.page;
+			b.word = text.isEmpty() ? ' ' : text.at(0);
 			ts.read(1);
 
 			boxes.push_back(b);
@@ -227,6 +259,8 @@ void boxeditor::show_boxes(const box_list& boxes) const
 
 	tbl->setUpdatesEnabled(true);
 	tbl->update();
+
+	_status_words->setText(QString("words: %1").arg(boxes.count()));
 }
 
 box_list boxeditor::boxes() const
