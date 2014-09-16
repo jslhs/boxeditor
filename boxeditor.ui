@@ -20,6 +20,12 @@
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <widget class="QTableWidget" name="tblWords">
+      <property name="minimumSize">
+       <size>
+        <width>400</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
         <width>400</width>
@@ -96,6 +102,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionOpenFolder"/>
     <addaction name="actionSave"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -106,12 +113,18 @@
     </property>
     <addaction name="action_About"/>
    </widget>
+   <widget class="QMenu" name="menuImages">
+    <property name="title">
+     <string>Images</string>
+    </property>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuImages"/>
    <addaction name="menu_Help"/>
   </widget>
   <action name="actionOpen">
    <property name="text">
-    <string>&amp;Open</string>
+    <string>&amp;Open Image</string>
    </property>
   </action>
   <action name="action_About">
@@ -127,6 +140,11 @@
   <action name="actionExit">
    <property name="text">
     <string>&amp;Exit</string>
+   </property>
+  </action>
+  <action name="actionOpenFolder">
+   <property name="text">
+    <string>Open Folder...</string>
    </property>
   </action>
  </widget>

@@ -17,6 +17,7 @@ boxeditor::boxeditor(QWidget *parent)
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(open()));
 	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(save()));
 	connect(ui.actionExit, SIGNAL(triggered()), qApp, SLOT(quit()));
+	connect(ui.actionOpenFolder, SIGNAL(triggered()), this, SLOT(open_folder()));
 	connect(ui.tblWords, SIGNAL(activated(const QModelIndex&)), this, SLOT(row_activated(const QModelIndex&)));
 	connect(ui.tblWords, SIGNAL(clicked(const QModelIndex&)), this, SLOT(row_activated(const QModelIndex&)));
 	connect(ui.tblWords, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(item_changed(QTableWidgetItem*)));
@@ -33,7 +34,8 @@ boxeditor::boxeditor(QWidget *parent)
 	auto act_merge = new QAction("Merge", this);
 	auto act_split = new QAction("Split", this);
 	auto act_remove = new QAction("Remove", this);
-	auto act_add = new QAction("Add", this);
+	auto act_add = new QAction("Insert", this);
+	
 
 	connect(act_merge, SIGNAL(triggered()), this, SLOT(merge_boxes()));
 	connect(act_split, SIGNAL(triggered()), this, SLOT(split_box()));
@@ -65,6 +67,7 @@ void boxeditor::open()
 
 void boxeditor::open(const QString& img_file)
 {
+	setWindowTitle("box editor - " + filename(img_file));
 	_img = QImage(img_file);
 	_box_filename = img_file;
 	auto pos = _box_filename.lastIndexOf(".");
@@ -289,7 +292,10 @@ void boxeditor::dropEvent(QDropEvent* ev)
 		auto urls = ev->mimeData()->urls();
 		if (urls.isEmpty()) return;
 		auto filename = urls.first().toLocalFile();
-		open(filename);
+		QDir dir(filename);
+		if (dir.exists()) open(dir);
+		else
+			open(filename);
 	}
 }
 
@@ -308,10 +314,89 @@ void boxeditor::dragEnterEvent(QDragEnterEvent* ev)
 		else
 		{
 			auto filename = urls.first().toLocalFile();
+			QDir dir(filename);
 			QRegExp exp(".*[jpg|jpeg|bmp|tif|png|gif]$");
-			can_drop = exp.exactMatch(filename);
+			can_drop = dir.exists() || exp.exactMatch(filename);
 		}
 
 		ev->setDropAction(can_drop ? Qt::LinkAction : Qt::IgnoreAction);
+	}
+}
+
+QString boxeditor::filename(const QString& path) const
+{
+	auto &tokens = path.split('/');
+	return tokens.isEmpty() ? "" : tokens.last();
+}
+
+void boxeditor::change_img()
+{
+	auto s = dynamic_cast<QAction*>(sender());
+	if (s)
+	{
+		open(s->data().value<QString>());
+	}
+
+	for (auto act : _img_acts)
+	{
+		act->setChecked(s == act);
+	}
+}
+
+void boxeditor::add_imgs(const QStringList& imgs)
+{
+	auto menu = ui.menuImages;
+	for (auto act : _img_acts)
+	{
+		menu->removeAction(act);
+		disconnect(act, SIGNAL(triggered()), this, SLOT(change_img()));
+	}
+	_img_acts.clear();
+
+	if (imgs.isEmpty()) return;
+
+	for (auto &img : imgs)
+	{
+		auto act = new QAction(filename(img), this);
+		act->setData(QVariant(img));
+		act->setCheckable(true);
+		connect(act, SIGNAL(triggered()), this, SLOT(change_img()));
+		_img_acts.push_back(act);
+	}
+
+	_img_acts.first()->setChecked(true);
+	open(imgs.first());
+
+	menu->addActions(_img_acts);
+}
+
+void boxeditor::open(QDir dir)
+{
+	QStringList filters;
+	filters << "*.jpg" << "*.jpeg" << "*.bmp" << "*.png" << "*.tif" << "*.gif";
+	if (dir.exists())
+	{
+		auto fileInfos = dir.entryInfoList(filters, QDir::Files);
+		QStringList files;
+		for (auto &fileInfo : fileInfos)
+		{
+			files.push_back(fileInfo.filePath());
+		}
+
+		add_imgs(files);
+	}
+}
+
+void boxeditor::open_folder()
+{
+	QFileDialog dlg(this, "Choose Folder");
+	dlg.setFilter(QDir::Dirs);
+	dlg.setFileMode(QFileDialog::Directory);
+	if (dlg.exec() == QDialog::Accepted)
+	{
+		auto &folders = dlg.selectedFiles();
+		if (folders.isEmpty()) return;
+		else
+			open(QDir(folders.first()));
 	}
 }

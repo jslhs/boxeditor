@@ -6,6 +6,7 @@
 
 #include <QVector>
 #include <QImage>
+#include <QDir>
 
 struct box
 {
@@ -39,6 +40,7 @@ public:
 
 public slots:
 	void open();
+	void open_folder();
 	void save();
 	void row_activated(const QModelIndex & index);
 	void item_changed(QTableWidgetItem * item);
@@ -47,7 +49,8 @@ public slots:
 	void split_box();
 	void remove_boxes();
 	void add_box();
-	
+	void change_img();
+
 protected:
 	void dropEvent(QDropEvent* ev) override;
 	void dragEnterEvent(QDragEnterEvent* ev) override;
@@ -57,10 +60,14 @@ protected:
 	box_list boxes() const;
 	void save(const QString& filename, const box_list& boxes) const;
 	void show_img_with_boxes(const QImage& img, const box_list& boxes) const;
+	QString filename(const QString& path) const;
+	void add_imgs(const QStringList& imgs);
+	void open(QDir dir);
 
 private:
 	Ui::boxeditorClass ui;
 
+	QList<QAction*> _img_acts;
 	QString _box_filename;
 	QImage _img;
 };
