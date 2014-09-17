@@ -394,6 +394,8 @@ void boxeditor::change_img()
 	auto s = dynamic_cast<QAction*>(sender());
 	if (s)
 	{
+		_zoom = 1.0f;
+		ui.zoom->setCurrentText("100%");
 		open(s->data().value<QString>());
 	}
 
