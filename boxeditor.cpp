@@ -12,6 +12,7 @@
 
 boxeditor::boxeditor(QWidget *parent)
 	: QMainWindow(parent)
+	, _zoom(1.0f)
 {
 	ui.setupUi(this);
 
@@ -22,6 +23,10 @@ boxeditor::boxeditor(QWidget *parent)
 	connect(ui.tblWords, SIGNAL(activated(const QModelIndex&)), this, SLOT(row_activated(const QModelIndex&)));
 	connect(ui.tblWords, SIGNAL(clicked(const QModelIndex&)), this, SLOT(row_activated(const QModelIndex&)));
 	connect(ui.tblWords, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(item_changed(QTableWidgetItem*)));
+	connect(ui.zoom, SIGNAL(currentTextChanged(const QString&)), this, SLOT(zoom_changed(const QString&)));
+
+	ui.box->setParent(this);
+	ui.img_view->setWidget(ui.box);
 
 	auto saveKey = new QShortcut(QKeySequence("Ctrl+S"), this);
 	connect(saveKey, SIGNAL(activated()), this, SLOT(save()));
@@ -302,7 +307,7 @@ void boxeditor::save(const QString& filename, const box_list& boxes) const
 
 void boxeditor::show_img_with_boxes(const QImage& img, const box_list& boxes) const
 {
-	QImage draw_img(img);
+	QImage draw_img(img.scaled(img.width() * _zoom, img.height() * _zoom));
 	auto ranges = ui.tblWords->selectedRanges();
 
 	auto inRange = [&](int row){
@@ -322,7 +327,7 @@ void boxeditor::show_img_with_boxes(const QImage& img, const box_list& boxes) co
 	{
 		pen.setWidth(inRange(i) ? 3 : 1);
 		p.setPen(pen);
-		p.drawRect(box.left, img.height() - box.top, box.width(), box.height());
+		p.drawRect(box.left * _zoom, (img.height() - box.top) * _zoom, _zoom * box.width(), _zoom * box.height());
 		i++;
 	}
 
@@ -456,3 +461,15 @@ void boxeditor::open_folder()
 	}
 }
 
+void boxeditor::zoom_changed(const QString& text)
+{
+	auto t = text;
+	bool ok = false;
+	t.remove("%");
+	auto val = t.toInt(&ok);
+	if (!ok) return;
+	_zoom = val / 100.0f;
+	if (!text.endsWith("%")) 
+		ui.zoom->setCurrentText(text + "%");
+	show_img_with_boxes(_img, boxes());
+}

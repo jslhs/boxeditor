@@ -52,6 +52,7 @@ public slots:
 	void remove_boxes();
 	void add_box();
 	void change_img();
+	void zoom_changed(const QString& text);
 
 protected:
 	void dropEvent(QDropEvent* ev) override;
@@ -74,6 +75,7 @@ private:
 	QString _box_filename;
 	QImage _img;
 	QLabel* _status_words;
+	float _zoom;
 };
 
 #endif // BOXEDITOR_H
