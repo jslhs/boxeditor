@@ -67,4 +67,10 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="boxeditor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="boxeditor.ico" />
+  </ItemGroup>
 </Project>

@@ -46,3 +46,7 @@ boxeditor.sdf
 GeneratedFiles
 
 
+
+*.aps
+Debug/RCa07700
+*.res
