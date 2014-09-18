@@ -52,3 +52,5 @@ Debug/RCa07700
 
 Win32/Debug/boxeditor.exe
 Win32/Debug/ocr.exe
+ocr/out.txt
+ocr/result.txt

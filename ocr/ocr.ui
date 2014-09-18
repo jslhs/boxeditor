@@ -10,12 +10,15 @@
     <height>551</height>
    </rect>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>ocr</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="acceptDrops">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
@@ -57,10 +60,14 @@
          </rect>
         </property>
         <property name="styleSheet">
-         <string notr="true">background-color: rgb(255, 255, 255);</string>
+         <string notr="true">background-color: rgb(255, 255, 255);
+font-size:30pt;</string>
         </property>
         <property name="text">
          <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </widget>
@@ -84,12 +91,12 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Result Text:</string>
+          <string>Result:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit"/>
+        <widget class="QLineEdit" name="txt"/>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton">
