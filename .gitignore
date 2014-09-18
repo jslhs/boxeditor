@@ -40,7 +40,6 @@ boxeditor.sdf
 *.obj
 *.tlog
 *.pdb
-*.exe
 *.ilk
 *.opensdf
 GeneratedFiles
@@ -50,3 +49,6 @@ GeneratedFiles
 *.aps
 Debug/RCa07700
 *.res
+
+Win32/Debug/boxeditor.exe
+Win32/Debug/ocr.exe
