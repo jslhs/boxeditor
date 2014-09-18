@@ -26,7 +26,8 @@ ocr::ocr(QWidget *parent)
 	env << QString("TESSDATA_PREFIX=%1").arg(dir);
 	_tess.setProgram("bin/tesseract.exe");
 	_tess.setEnvironment(env);
-	_tess.setStandardOutputFile("out.txt");
+	//_tess.setStandardOutputFile("out.txt");
+	_tess.setStandardErrorFile("error.txt");
 }
 
 ocr::~ocr()
