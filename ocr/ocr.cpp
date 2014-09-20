@@ -10,15 +10,16 @@ ocr::ocr(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
+	setWindowTitle("Text Recognition");
 
 	ui.img_view->setParent(this);
-	ui.img_view->setText("Drop Image Here.");
 	ui.scrollArea->setWidget(ui.img_view);
 
 	connect(this, SIGNAL(defer_open(QString)), this, SLOT(open(QString)), Qt::QueuedConnection);
 	connect(&_tess, SIGNAL(error(QProcess::ProcessError)), this, SLOT(tess_error(QProcess::ProcessError)));
 	connect(&_tess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(tess_finished(int, QProcess::ExitStatus)));
 	connect(&_tess, SIGNAL(started()), this, SLOT(tess_started()));
+	connect(ui.scale, SIGNAL(currentIndexChanged(int)), this, SLOT(scale_changed(int)));
 
 	auto dir = QDir::currentPath();
 
@@ -63,25 +64,53 @@ void ocr::dropEvent(QDropEvent* ev)
 
 void ocr::open(QString img_file)
 {
-	ui.img_view->setPixmap(QPixmap::fromImage(QImage(img_file)));
+	_img = QImage(img_file);
 	QStringList args;
 	args << img_file << "result" << "-l" << "chi_demo2";
 	_tess.setArguments(args);
 	_tess.start();
+	show_img();
+}
+
+void ocr::show_img()
+{
+	if (_img.isNull())
+	{
+		ui.img_view->setText("Drop Image Here.");
+		return;
+	}
+
+	int i = ui.scale->currentIndex();
+	QImage img;
+	if (i == 0)
+	{
+		int w = ui.scrollArea->geometry().width();
+		int h = ui.scrollArea->geometry().height();
+		img = _img.scaled(w, h, Qt::KeepAspectRatio);
+	}
+	else if (i == 1)
+	{
+		img = _img;
+	}
+
+	ui.img_view->setPixmap(QPixmap::fromImage(img));
 }
 
 void ocr::tess_error(QProcess::ProcessError err)
 {
-
+	ui.txt->setEnabled(true);
+	ui.txt->setText("ERROR!");
 }
 
 void ocr::tess_started()
 {
-
+	ui.txt->setEnabled(false);
+	ui.txt->setText("Analyzing, please wait...");
 }
 
 void ocr::tess_finished(int code, QProcess::ExitStatus status)
 {
+	ui.txt->setEnabled(true);
 	if (!code)
 	{
 		QFile file("result.txt");
@@ -96,7 +125,7 @@ void ocr::tess_finished(int code, QProcess::ExitStatus status)
 				auto e = txt.indexOf(QStringLiteral("ºÅ"), s);
 				if (e != -1)
 				{
-					ui.txt->setText(txt.mid(s, e - s));
+					ui.txt->setText(txt.mid(s, e - s + 1));
 					return;
 				}
 			}
@@ -104,4 +133,14 @@ void ocr::tess_finished(int code, QProcess::ExitStatus status)
 	}
 
 	ui.txt->setText("ERROR!");
+}
+
+void ocr::scale_changed(int i)
+{
+	show_img();
+}
+
+void ocr::resizeEvent(QResizeEvent* ev)
+{
+	show_img();
 }

@@ -18,6 +18,8 @@ public slots:
 	void tess_error(QProcess::ProcessError err);
 	void tess_started();
 	void tess_finished(int code, QProcess::ExitStatus status);
+	void show_img();
+	void scale_changed(int i);
 
 signals:
 	void defer_open(QString img_file);
@@ -25,6 +27,7 @@ signals:
 protected:
 	void dragEnterEvent(QDragEnterEvent* ev) override;
 	void dropEvent(QDropEvent* ev) override;
+	void resizeEvent(QResizeEvent* ev) override;
 
 private:
 	void parse(const QString& img_file);
@@ -32,6 +35,7 @@ private:
 private:
 	Ui::ocrClass ui;
 	QProcess _tess;
+	QImage _img;
 };
 
 #endif // OCR_H
